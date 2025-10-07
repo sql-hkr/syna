@@ -1,6 +1,10 @@
 # Syna
 
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![GitHub Release](https://img.shields.io/github/v/release/sql-hkr/syna)
+![GitHub License](https://img.shields.io/github/license/sql-hkr/syna)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/sql-hkr/syna/ci.yml?label=CI)
+
+
 
 Syna is a lightweight machine learning framework inspired by [DeZero](https://github.com/oreilly-japan/deep-learning-from-scratch-3). Built from scratch using only NumPy, it follows a define-by-run (dynamic computation graph) approach and includes a basic reinforcement learning framework.
 
@@ -21,5 +25,5 @@ uv sync
 
 ## License
 
-Syna is licensed under the MIT License. See LICENSE for details.
+Syna is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
