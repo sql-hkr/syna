@@ -10,6 +10,10 @@ jobs:
     permissions:
       pages: write
       id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout repository
@@ -22,6 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip install .
           pip install sphinx
 
       - name: Generate API docs with sphinx-apidoc
