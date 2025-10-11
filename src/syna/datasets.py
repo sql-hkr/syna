@@ -1,31 +1,52 @@
+"""Datasets — minimal dataset base class."""
+
+from typing import Any, Callable, Optional
+
 import numpy as np
 
 
+def _identity(x: Any) -> Any:
+    return x
+
+
 class Dataset:
-    def __init__(self, train=True, transform=None, target_transform=None):
+    """Minimal base dataset.
+
+    Subclasses should override prepare() to populate self.data (and optionally self.label).
+
+    Args:
+        train (bool): Whether this is a training split.
+        transform (callable, optional): Function applied to each data item.
+        target_transform (callable, optional): Function applied to each label.
+    Attributes:
+        data: Sequence of data items (must support indexing and len()).
+        label: Sequence of labels or None.
+    """
+
+    def __init__(
+        self,
+        train: bool = True,
+        transform: Optional[Callable[[Any], Any]] = None,
+        target_transform: Optional[Callable[[Any], Any]] = None,
+    ):
         self.train = train
-        self.transform = transform
-        self.target_transform = target_transform
-        if self.transform is None:
-            self.transform = lambda x: x
-        if self.target_transform is None:
-            self.target_transform = lambda x: x
+        self.transform = transform or _identity
+        self.target_transform = target_transform or _identity
 
         self.data = None
         self.label = None
         self.prepare()
 
-    def __getitem__(self, index):
-        assert np.isscalar(index)
+    def __getitem__(self, index: int):
+        assert np.isscalar(index), "Index must be a scalar"
+        item = self.transform(self.data[index])
         if self.label is None:
-            return self.transform(self.data[index]), None
-        else:
-            return self.transform(self.data[index]), self.target_transform(
-                self.label[index]
-            )
+            return item, None
+        return item, self.target_transform(self.label[index])
 
-    def __len__(self):
-        return len(self.data)
+    def __len__(self) -> int:
+        return len(self.data) if self.data is not None else 0
 
     def prepare(self):
-        pass
+        """Populate self.data (and optionally self.label). Must be implemented by subclasses."""
+        raise NotImplementedError

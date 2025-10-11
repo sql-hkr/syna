@@ -1,6 +1,6 @@
 [project]
 name = "syna"
-version = "0.1.0"
+version = "0.2.0a1"
 description = "Syna is a lightweight machine learning framework inspired by DeZero."
 readme = "README.md"
 authors = [
@@ -25,4 +25,5 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ruff>=0.13.0",
+    "sphinx>=8.2.3",
 ]

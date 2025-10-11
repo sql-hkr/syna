@@ -1,3 +1,11 @@
+"""Core — Tensor and autograd primitives.
+
+Core Tensor, Parameter, Config and autograd Function primitives used across
+the syna library. This module contains the lightweight Tensor container and
+the Function base class which implement forward/backward for automatic
+differentiation.
+"""
+
 from __future__ import annotations
 
 import contextlib
@@ -10,12 +18,15 @@ import syna
 
 
 class Config:
+    """Global config flags affecting backprop and training behavior."""
+
     enable_backprop = True
     train = True
 
 
 @contextlib.contextmanager
 def using_config(name: str, value: bool):
+    """Temporarily set a Config attribute inside a context."""
     old_value = getattr(Config, name)
     setattr(Config, name, value)
     try:
@@ -25,19 +36,28 @@ def using_config(name: str, value: bool):
 
 
 def test_mode():
+    """Context manager to set train flag to False."""
     return using_config("train", False)
 
 
 def no_grad():
+    """Context manager to disable gradient tracking."""
     return using_config("enable_backprop", False)
 
 
 class Tensor:
+    """Simple Tensor container holding data, gradient and creator Function.
+
+    Most operator behavior delegates to syna.functions.* helpers so this class
+    focuses on bookkeeping for autograd.
+    """
+
     __array_priority__ = 200
 
     def __init__(self, data, name: Optional[str] = None) -> None:
-        # if not isinstance(data, np.ndarray):
-        #     data = np.array(data)
+        # normalize scalars/lists to numpy arrays
+        if not isinstance(data, np.ndarray) and data is not None:
+            data = as_array(data)
         self.data = data
         self.name = name
         self.grad: Optional[Tensor] = None
@@ -65,10 +85,11 @@ class Tensor:
 
     def __repr__(self):
         if self.data is None:
-            return "variable(None)"
+            return "tensor(None)"
         p = str(self.data).replace("\n", "\n" + " " * 9)
-        return "variable(" + p + ")"
+        return "tensor(" + p + ")"
 
+    # arithmetic delegations
     def __add__(self, other):
         return syna.functions.add(self, other)
 
@@ -109,19 +130,29 @@ class Tensor:
         return syna.functions.min(self, **kwargs)
 
     def set_creator(self, func: Function) -> None:
+        """Mark this tensor as created by func (used for backprop ordering)."""
         self.creator = func
         self.generation = func.generation + 1
 
     def unchain(self) -> None:
+        """Remove reference to creator to break the computational graph."""
         self.creator = None
 
     def cleargrad(self) -> None:
+        """Clear stored gradient."""
         self.grad = None
 
     def backward(self, retain_grad=False, create_graph=False) -> None:
+        """Run backpropagation to compute gradients of inputs.
+
+        Args:
+            retain_grad: if False, intermediate gradients are cleared to save memory.
+            create_graph: if True, create graph for higher-order gradients.
+        """
         if self.grad is None:
             self.grad = Tensor(np.ones_like(self.data))
-        funcs = []
+
+        funcs: list[Function] = []
         seen_set = set()
 
         def add_func(f: Function) -> None:
@@ -130,12 +161,14 @@ class Tensor:
                 seen_set.add(f)
                 funcs.sort(key=lambda x: x.generation)
 
-        assert self.creator is not None
+        if self.creator is None:
+            return  # nothing to backprop
+
         add_func(self.creator)
 
         while funcs:
             f = funcs.pop()
-            gys = [output().grad for output in f.outputs if output().grad is not None]
+            gys = [output().grad for output in f.outputs]
             gxs = f.backward(*gys)
             with using_config("enable_backprop", create_graph):
                 if not isinstance(gxs, tuple):
@@ -152,6 +185,7 @@ class Tensor:
                     y().grad = None
 
     def unchain_backward(self):
+        """Remove creators for all upstream tensors (useful for freeing graph)."""
         if self.creator is not None:
             funcs = [self.creator]
             while funcs:
@@ -183,22 +217,32 @@ class Tensor:
 
 
 class Parameter(Tensor):
+    """A thin wrapper for trainable parameters (keeps API separate)."""
+
     pass
 
 
 def as_tensor(obj) -> Tensor:
+    """Ensure obj is a Tensor; convert scalars/arrays to Tensor if needed."""
     if isinstance(obj, Tensor):
         return obj
     return Tensor(as_array(obj))
 
 
 def as_array(x) -> np.ndarray:
+    """Convert scalars to numpy arrays; leave arrays unchanged."""
     if np.isscalar(x):
         return np.array(x)
     return x
 
 
 class Function:
+    """Base Function for forward/backward ops used in autograd.
+
+    Subclasses should implement forward (numpy arrays -> numpy arrays) and
+    backward (Tensor grads -> Tensor grads).
+    """
+
     def __call__(self, *input: Tensor | np.ndarray | int | float) -> Any:
         inputs = [as_tensor(x) for x in input]
         xs = [x.data for x in inputs]
@@ -206,13 +250,15 @@ class Function:
         if not isinstance(ys, tuple):
             ys = (ys,)
         outputs = [as_tensor(y) for y in ys]
+
         if Config.enable_backprop:
-            self.generation = max([x.generation for x in inputs])
+            self.generation = max(x.generation for x in inputs) if inputs else 0
             for output in outputs:
                 output.set_creator(self)
             self.inputs = inputs
             self.outputs = [weakref.ref(output) for output in outputs]
-        return outputs if len(outputs) > 1 else outputs[0]
+
+        return outputs[0] if len(outputs) == 1 else outputs
 
     def forward(self, *args: np.ndarray) -> np.ndarray:
         raise NotImplementedError()

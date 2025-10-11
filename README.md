@@ -1,9 +1,9 @@
 # Syna
 
-![GitHub Release](https://img.shields.io/github/v/release/sql-hkr/syna)
+![PyPI - Version](https://img.shields.io/pypi/v/syna)
 ![GitHub License](https://img.shields.io/github/license/sql-hkr/syna)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/syna)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/sql-hkr/syna/ci.yml?label=CI)
-
 
 
 Syna is a lightweight machine learning framework inspired by [DeZero](https://github.com/oreilly-japan/deep-learning-from-scratch-3). Built from scratch using only NumPy, it follows a define-by-run (dynamic computation graph) approach and includes a basic reinforcement learning framework.
@@ -15,12 +15,20 @@ Designed for beginners and researchers, Syna helps you learn the fundamentals of
 
 ## Installation
 
+Get the Syna Source
+
 ```bash
 git clone https://github.com/sql-hkr/syna.git
 cd syna
 uv venv
 source .venv/bin/activate
 uv sync
+```
+
+Or, from [PyPI](https://pypi.org/project/syna/):
+
+```bash
+uv add syna
 ```
 
 ## License

@@ -1,3 +1,10 @@
+"""DQN agent implementation for discrete action spaces.
+
+Contains:
+- QNet: simple 3-layer MLP producing Q-values for each action.
+- DQNAgent: lightweight DQN with replay buffer, target network and Adam optimizer.
+"""
+
 import copy
 
 import numpy as np
@@ -9,7 +16,13 @@ from syna.rl import ReplayBuffer
 
 
 class QNet(Model):
-    def __init__(self, action_size):
+    """Small feed-forward network that outputs Q-values for each action.
+
+    Args:
+        action_size: number of discrete actions.
+    """
+
+    def __init__(self, action_size: int):
         super().__init__()
         self.l1 = L.Linear(128)
         self.l2 = L.Linear(128)
@@ -18,55 +31,59 @@ class QNet(Model):
     def forward(self, x):
         x = F.relu(self.l1(x))
         x = F.relu(self.l2(x))
-        x = self.l3(x)
-        return x
+        return self.l3(x)
 
 
 class DQNAgent:
+    """Simplified DQN agent.
+
+    The agent uses an epsilon-greedy policy, a replay buffer, and a target network.
+    """
+
     def __init__(
         self,
-        gamma=0.98,
-        lr=0.0005,
-        epsilon=0.1,
-        buffer_size=10000,
-        batch_size=32,
-        action_size=2,
+        action_size: int = 2,
+        gamma: float = 0.98,
+        lr: float = 5e-4,
+        epsilon: float = 0.1,
+        buffer_size: int = 10000,
+        batch_size: int = 32,
     ):
-        self.gamma = gamma
-        self.lr = lr
-        self.epsilon = epsilon
-        self.buffer_size = buffer_size
-        self.batch_size = batch_size
         self.action_size = action_size
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.batch_size = batch_size
 
-        self.replay_buffer = ReplayBuffer(self.buffer_size, self.batch_size)
-        self.qnet = QNet(self.action_size)
-        self.qnet_target = QNet(self.action_size)
-        self.optimizer = optimizers.Adam(self.lr)
+        self.replay_buffer = ReplayBuffer(buffer_size, batch_size)
+        self.qnet = QNet(action_size)
+        self.qnet_target = copy.deepcopy(self.qnet)
+
+        self.optimizer = optimizers.Adam(lr)
         self.optimizer.setup(self.qnet)
 
-    def select_action(self, state):
+    def select_action(self, state: np.ndarray) -> int:
+        """Return an action using epsilon-greedy policy."""
         if np.random.rand() < self.epsilon:
-            return np.random.choice(self.action_size)
-        else:
-            state = state[np.newaxis, :]
-            qs = self.qnet(state)
-            return qs.data.argmax()
+            return np.random.randint(self.action_size)
+        qs = self.qnet(state[np.newaxis, :])
+        return int(qs.data.argmax())
 
     def update(self, state, action, reward, next_state, done):
+        """Store transition and update Q network from a sampled batch when available."""
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer) < self.batch_size:
             return
 
-        state, action, reward, next_state, done = self.replay_buffer.sample()
-        qs = self.qnet(state)
-        q = qs[np.arange(self.batch_size), action]
+        state_b, action_b, reward_b, next_state_b, done_b = self.replay_buffer.sample()
 
-        next_qs = self.qnet_target(next_state)
+        qs = self.qnet(state_b)
+        q = qs[np.arange(self.batch_size), action_b]
+
+        next_qs = self.qnet_target(next_state_b)
         next_q = next_qs.max(axis=1)
         next_q.unchain()
-        target = reward + (1 - done) * self.gamma * next_q
 
+        target = reward_b + (1 - done_b) * self.gamma * next_q
         loss = F.mean_squared_error(q, target)
 
         self.qnet.cleargrads()
@@ -74,4 +91,5 @@ class DQNAgent:
         self.optimizer.update()
 
     def sync_qnet(self):
+        """Copy current Q network weights to the target network."""
         self.qnet_target = copy.deepcopy(self.qnet)
