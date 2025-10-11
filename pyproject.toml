@@ -1,6 +1,6 @@
 [project]
 name = "syna"
-version = "0.1.0"
+version = "0.2.0a1"
 description = "Syna is a lightweight machine learning framework inspired by DeZero."
 readme = "README.md"
 authors = [
@@ -10,7 +10,6 @@ requires-python = ">=3.13"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "gymnasium[classic-control]>=1.2.1",
@@ -25,4 +24,5 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ruff>=0.13.0",
+    "sphinx>=8.2.3",
 ]
