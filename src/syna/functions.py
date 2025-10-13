@@ -198,7 +198,7 @@ class Log(Function):
     """Natural logarithm."""
 
     def forward(self, x):
-        return np.log(x)
+        return np.log(x + 1e-15)  # avoid log(0)
 
     def backward(self, gy):
         (x,) = self.inputs
@@ -639,22 +639,94 @@ def clip(x, x_min, x_max) -> Tensor:
     return Clip(x_min, x_max)(x)
 
 
-# Convenience aliases and elementwise ops built from primitives
-def mean(x) -> Tensor:
-    """Mean over the first dimension (batch mean)."""
-    return sum(x) / x.data.shape[0]
+def mean(x, axis: Optional[Tuple[int, ...]] = None, keepdims=False) -> Tensor:
+    """Mean like torch.mean: mean over all elements by default, or over given axis/axes."""
+    x = as_tensor(x)
+    if axis is None:
+        denom = float(x.data.size)
+    else:
+        axes = (axis,) if isinstance(axis, int) else axis
+        denom = 1
+        for ax in axes:
+            denom *= x.shape[ax]
+        denom = float(denom)
+    return sum(x, axis=axis, keepdims=keepdims) / denom
+
+
+class Sqrt(Function):
+    """Elementwise sqrt with dedicated backward (faster than generic pow)."""
+
+    def forward(self, x):
+        return np.sqrt(x)
+
+    def backward(self, gy):
+        y = self.outputs[0]()
+        assert y is not None
+        return gy / (2.0 * y.data)
 
 
 def sqrt(x) -> Tensor:
     """Elementwise square root."""
-    return x**0.5
+    x = as_tensor(x)
+    return Sqrt()(x)
+
+
+class Abs(Function):
+    """Elementwise absolute value with direct sign-based backward."""
+
+    def forward(self, x):
+        return np.abs(x)
+
+    def backward(self, gy):
+        x = self.inputs[0]
+        return gy * np.sign(x.data)
 
 
 def abs(x) -> Tensor:
     """Elementwise absolute value."""
-    return sqrt(x**2)
+    x = as_tensor(x)
+    return Abs()(x)
+
+
+class Minimum(Function):
+    """Elementwise minimum with direct backward using masks (faster than algebraic identity)."""
+
+    def forward(self, x0, x1):
+        return np.minimum(x0, x1)
+
+    def backward(self, gy):
+        x0, x1 = self.inputs
+        mask0 = x0.data <= x1.data
+        mask1 = ~mask0
+        gx0 = gy * mask0
+        gx1 = gy * mask1
+        if x0.shape != x1.shape:
+            return sum_to(gx0, x0.shape), sum_to(gx1, x1.shape)
+        return gx0, gx1
 
 
 def minimum(x, y) -> Tensor:
-    """Elementwise minimum using algebraic identity to enable autograd."""
-    return 0.5 * (x + y - abs(x - y))
+    """Elementwise minimum using a dedicated Function for performance."""
+    return Minimum()(x, y)
+
+
+class Maximum(Function):
+    """Elementwise maximum with direct backward using masks."""
+
+    def forward(self, x0, x1):
+        return np.maximum(x0, x1)
+
+    def backward(self, gy):
+        x0, x1 = self.inputs
+        mask0 = x0.data >= x1.data
+        mask1 = ~mask0
+        gx0 = gy * mask0
+        gx1 = gy * mask1
+        if x0.shape != x1.shape:
+            return sum_to(gx0, x0.shape), sum_to(gx1, x1.shape)
+        return gx0, gx1
+
+
+def maximum(x, y) -> Tensor:
+    """Elementwise maximum using a dedicated Function for performance."""
+    return Maximum()(x, y)

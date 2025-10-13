@@ -27,11 +27,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install .
-          pip install sphinx
+          pip install sphinx shibuya
 
       - name: Generate API docs with sphinx-apidoc
         run: |
-          sphinx-apidoc -o docs/api/ src/
+          sphinx-apidoc -e -o docs/api/ src/
 
       - name: Build Sphinx documentation
         run: |
