@@ -31,6 +31,66 @@ Or, from [PyPI](https://pypi.org/project/syna/):
 uv add syna
 ```
 
+> [!IMPORTANT]
+> To visualize the computation graph, you need to install [Graphviz](https://graphviz.org).
+> ```bash
+> brew install graphviz # macOS
+> sudo apt install graphviz # Linux
+> ```
+
+## Getting started
+### Computation Graph
+
+Visualize the computation graph for the fifth derivative of tanh(x) with respect to x.
+
+```python
+import syna
+import syna.functions as F
+from syna.utils import plot_dot_graph
+
+x = syna.tensor(1.0)
+y = F.tanh(x)
+x.name = "x"
+y.name = "y"
+y.backward(create_graph=True)
+
+iters = 4
+
+for i in range(iters):
+    gx = x.grad
+    x.cleargrad()
+    gx.backward(create_graph=True)
+
+gx = x.grad
+gx.name = "gx" + str(iters + 1)
+plot_dot_graph(gx, verbose=False, to_file="tanh.svg")
+```
+
+The output graph is shown below.
+
+![](/docs/_static/graph/tanh.svg)
+
+### RL (Deep Q-Network; DQN)
+
+Solve CartPole-v1 using the DQN algorithm.
+
+```python
+from syna.algo.dqn import DQNAgent
+from syna.rl import Trainer
+
+trainer = Trainer(
+    env_name="CartPole-v1",
+    num_episodes=300,
+    agent=DQNAgent(
+        lr=3e-4,
+    ),
+)
+trainer.train()
+```
+
+## API Reference
+- [syna package](https://sql-hkr.github.io/syna/api/syna.html)
+
 ## License
 
 Syna is licensed under the MIT License. See [LICENSE](LICENSE) for details.

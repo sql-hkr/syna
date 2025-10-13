@@ -24,6 +24,11 @@ Designed for beginners and researchers, Syna helps you learn the fundamentals of
 Installation
 ------------
 
+.. toctree::
+   :hidden:
+
+   installation
+
 Get the Syna source
 
 .. code-block:: bash
@@ -40,16 +45,32 @@ Or, from `PyPI <https://pypi.org/project/syna/>`_:
 
    uv add syna
 
-License
--------
+.. important::
 
-Syna is licensed under the MIT License. See `LICENSE <https://github.com/sql-hkr/syna/blob/main/LICENSE>`_ for details.
+   To visualize the computation graph, you need to install `Graphviz <https://graphviz.org>`_.
 
+   .. code-block:: bash
+
+      brew install graphviz # macOS
+      sudo apt install graphviz # Ubuntu
+
+Examples
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   examples/index
 
 API Reference
 ---------------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    api/syna
+
+License
+-------
+
+Syna is licensed under the MIT License. See `LICENSE <https://github.com/sql-hkr/syna/blob/main/LICENSE>`_ for details.

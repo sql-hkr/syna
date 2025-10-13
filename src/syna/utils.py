@@ -24,13 +24,13 @@ def _dot_var(v, verbose: bool = False) -> str:
         if v.name is not None:
             name += ": "
         name += f"{v.shape} {v.dtype}"
-    return f'{id(v)} [label="{name}", color=deepskyblue, style=filled, shape=circle]\n'
+    return f'{id(v)} [label="{name}", color=deeppink, style=filled, shape=circle]\n'
 
 
 def _dot_func(f) -> str:
     """Return DOT node and edges for a function (Function-like object)."""
-    ret = f'{id(f)} [label="{f.__class__.__name__}", color=deeppink, style=filled, shape=circle]\n'
-    edge_fmt = "{} -> {} [color=white]\n"
+    ret = f'{id(f)} [label="{f.__class__.__name__}", color=deepskyblue, style=filled, shape=circle]\n'
+    edge_fmt = '{} -> {} [color="deeppink",penwidth=3]\n'
     for x in f.inputs:
         ret += edge_fmt.format(id(x), id(f))
     for y in f.outputs:  # y is weakref

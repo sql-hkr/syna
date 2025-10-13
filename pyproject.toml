@@ -24,5 +24,8 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ruff>=0.13.0",
+    "shibuya>=2025.9.25",
     "sphinx>=8.2.3",
+    "torch>=2.8.0",
+    "torchvision>=0.23.0",
 ]
