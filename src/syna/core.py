@@ -86,7 +86,7 @@ class Tensor:
     def __repr__(self):
         if self.data is None:
             return "tensor(None)"
-        p = str(self.data).replace("\n", "\n" + " " * 9)
+        p = str(self.data).replace("\n", "\n" + " " * 7)
         return "tensor(" + p + ")"
 
     # arithmetic delegations
@@ -222,11 +222,33 @@ class Parameter(Tensor):
     pass
 
 
+def tensor(
+    data, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Tensor factory.
+
+    Args:
+        data: array-like or scalar.
+        dtype: numpy dtype (optional).
+        requires_grad: if True, the returned Tensor is a leaf that will accumulate gradients.
+        name: optional name for the Tensor.
+    """
+    arr = np.array(data, dtype=dtype) if dtype is not None else np.array(data)
+    if requires_grad:
+        return Tensor(arr, name=name)
+    else:
+        with no_grad():
+            return Tensor(arr, name=name)
+
+
 def as_tensor(obj) -> Tensor:
-    """Ensure obj is a Tensor; convert scalars/arrays to Tensor if needed."""
+    """Ensure obj is a Tensor; convert scalars/arrays to Tensor if needed.
+
+    Delegates to tensor(...), which follows PyTorch-style semantics.
+    """
     if isinstance(obj, Tensor):
         return obj
-    return Tensor(as_array(obj))
+    return tensor(obj)
 
 
 def as_array(x) -> np.ndarray:
@@ -234,6 +256,179 @@ def as_array(x) -> np.ndarray:
     if np.isscalar(x):
         return np.array(x)
     return x
+
+
+# Random and utility tensor factories (torch-like)
+def _normalize_shape_args(shape_args):
+    if len(shape_args) == 1 and isinstance(shape_args[0], (tuple, list)):
+        return tuple(shape_args[0])
+    return tuple(shape_args)
+
+
+def rand(
+    *shape, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor with uniform random values in [0, 1)."""
+    shape = _normalize_shape_args(shape)
+    arr = np.random.rand(*shape)
+    if dtype is not None:
+        arr = arr.astype(dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def randn(
+    *shape, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor with samples from the standard normal distribution."""
+    shape = _normalize_shape_args(shape)
+    arr = np.random.randn(*shape)
+    if dtype is not None:
+        arr = arr.astype(dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def zeros(
+    *shape, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor filled with zeros."""
+    shape = _normalize_shape_args(shape)
+    arr = np.zeros(shape, dtype=dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def ones(
+    *shape, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor filled with ones."""
+    shape = _normalize_shape_args(shape)
+    arr = np.ones(shape, dtype=dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def full(
+    shape,
+    fill_value,
+    dtype=None,
+    requires_grad: bool = False,
+    name: Optional[str] = None,
+) -> Tensor:
+    """Return a tensor of shape `shape` filled with `fill_value`.
+
+    `shape` may be an int or a tuple/list of ints (matches numpy/torch style).
+    """
+    # normalize shape to tuple
+    if isinstance(shape, (tuple, list)):
+        shape = tuple(shape)
+    else:
+        try:
+            # allow ints-like
+            shape = (int(shape),)
+        except Exception:
+            # fallback: try to treat as array-like and use its shape
+            shape = tuple(np.array(shape).shape)
+    arr = np.full(shape, fill_value, dtype=dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def arange(
+    start,
+    stop=None,
+    step=1,
+    dtype=None,
+    requires_grad: bool = False,
+    name: Optional[str] = None,
+) -> Tensor:
+    """Return a 1-D tensor with values from start to stop (exclusive)."""
+    if stop is None:
+        arr = np.arange(start, dtype=dtype, step=step)
+    else:
+        arr = np.arange(start, stop, step=step, dtype=dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def randint(
+    low,
+    high=None,
+    size=None,
+    dtype=None,
+    requires_grad: bool = False,
+    name: Optional[str] = None,
+) -> Tensor:
+    """Return random integers from low (inclusive) to high (exclusive)."""
+    arr = np.random.randint(low, high=high, size=size)
+    if dtype is not None:
+        arr = arr.astype(dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def eye(
+    n, m=None, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a 2-D identity matrix (or rectangular identity if m is given)."""
+    arr = np.eye(N=n, M=m, dtype=dtype) if m is not None else np.eye(N=n, dtype=dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def zeros_like(
+    x, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor of zeros with the same shape as x (Tensor or array-like)."""
+    if isinstance(x, Tensor):
+        shape = x.shape
+        use_dtype = dtype if dtype is not None else x.dtype
+    else:
+        arr_like = np.array(x)
+        shape = arr_like.shape
+        use_dtype = dtype if dtype is not None else arr_like.dtype
+    arr = np.zeros(shape, dtype=use_dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def ones_like(
+    x, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor of ones with the same shape as x (Tensor or array-like)."""
+    if isinstance(x, Tensor):
+        shape = x.shape
+        use_dtype = dtype if dtype is not None else x.dtype
+    else:
+        arr_like = np.array(x)
+        shape = arr_like.shape
+        use_dtype = dtype if dtype is not None else arr_like.dtype
+    arr = np.ones(shape, dtype=use_dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def full_like(
+    x, fill_value, dtype=None, requires_grad: bool = False, name: Optional[str] = None
+) -> Tensor:
+    """Return a tensor with the same shape as `x` filled with `fill_value`.
+
+    `x` may be a `Tensor` or array-like.
+    """
+    if isinstance(x, Tensor):
+        shape = x.shape
+        use_dtype = dtype if dtype is not None else x.dtype
+    else:
+        arr_like = np.array(x)
+        shape = arr_like.shape
+        use_dtype = dtype if dtype is not None else arr_like.dtype
+    arr = np.full(shape, fill_value, dtype=use_dtype)
+    return tensor(arr, requires_grad=requires_grad, name=name)
+
+
+def range(
+    start,
+    stop=None,
+    step=1,
+    dtype=None,
+    requires_grad: bool = False,
+    name: Optional[str] = None,
+) -> Tensor:
+    """Alias for arange to match torch.range-like convenience (behaves like arange)."""
+    return arange(
+        start, stop=stop, step=step, dtype=dtype, requires_grad=requires_grad, name=name
+    )
 
 
 class Function:
