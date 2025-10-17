@@ -9,6 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . /app
 WORKDIR /app
 
+ENV UV_PROJECT_ENVIRONMENT=/venv
+ENV PATH="/venv/bin:$PATH"
 RUN uv sync --frozen
-
-ENV PATH="/app/.venv/bin:$PATH"
