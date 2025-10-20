@@ -20,10 +20,10 @@ from syna.core import (
     using_config,
     zeros_like,
 )
-from syna.dataloaders import DataLoader, SeqDataLoader
 from syna.datasets import Dataset
 from syna.layers import Layer
 from syna.models import Model
+from syna.utils.dataloaders import DataLoader, SeqDataLoader
 
 # Explicit exports for `from syna import ...` and for Sphinx documentation
 __all__ = [

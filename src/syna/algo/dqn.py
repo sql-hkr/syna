@@ -11,8 +11,8 @@ import numpy as np
 
 import syna.functions as F
 import syna.layers as L
-from syna import Model, optimizers
-from syna.rl import ReplayBuffer
+from syna import Model, optim
+from syna.utils.rl import ReplayBuffer
 
 
 class QNet(Model):
@@ -58,7 +58,7 @@ class DQNAgent:
         self.qnet = QNet(action_size)
         self.qnet_target = copy.deepcopy(self.qnet)
 
-        self.optimizer = optimizers.Adam(lr)
+        self.optimizer = optim.Adam(lr)
         self.optimizer.setup(self.qnet)
 
     def select_action(self, state: np.ndarray) -> int:

@@ -62,8 +62,8 @@ class DataLoader:
         batch_index = self.index[start:end]
         batch = [self.dataset[i] for i in batch_index]
 
-        x = np.array([example[0] for example in batch])
-        t = np.array([example[1] for example in batch])
+        x = np.asarray([example[0] for example in batch])
+        t = np.asarray([example[1] for example in batch])
 
         self.iteration += 1
         return x, t
@@ -105,8 +105,8 @@ class SeqDataLoader(DataLoader):
         ]
         batch = [self.dataset[i] for i in indices]
 
-        x = np.array([example[0] for example in batch])
-        t = np.array([example[1] for example in batch])
+        x = np.asarray([example[0] for example in batch])
+        t = np.asarray([example[1] for example in batch])
 
         self.iteration += 1
         return x, t
