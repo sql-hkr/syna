@@ -19,7 +19,7 @@ class Model(Layer):
     def plot(self, *inputs, to_file="model.png") -> None:
         """Run forward and save a DOT graph of the output computation."""
         y = self.forward(*inputs)
-        utils.plot_dot_graph(y, verbose=True, to_file=to_file)
+        utils.viz.plot_dot_graph(y, verbose=True, to_file=to_file)
 
 
 class MLP(Model):

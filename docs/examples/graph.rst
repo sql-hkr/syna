@@ -7,7 +7,7 @@ Visualize the computation graph for the fifth derivative of tanh(x) with respect
 
     import syna
     import syna.functions as F
-    from syna.utils import plot_dot_graph
+    from syna import utils
 
     x = syna.tensor(1.0)
     y = F.tanh(x)
@@ -24,7 +24,7 @@ Visualize the computation graph for the fifth derivative of tanh(x) with respect
 
     gx = x.grad
     gx.name = "gx" + str(iters + 1)
-    plot_dot_graph(gx, verbose=False, to_file="tanh.svg")
+    utils.viz.plot_dot_graph(gx, verbose=False, to_file="tanh.svg")
 
 The output graph is shown below.
 

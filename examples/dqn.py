@@ -1,5 +1,5 @@
 from syna.algo.dqn import DQNAgent
-from syna.rl import Trainer
+from syna.utils.rl import Trainer
 
 trainer = Trainer(
     env_name="CartPole-v1",

@@ -1,4 +1,4 @@
-"""Datasets — minimal dataset base class."""
+"""Datasets — minimal dataset base class (MNIST behavior compatible with torchvision)."""
 
 from typing import Any, Callable, Optional
 

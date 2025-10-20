@@ -30,7 +30,7 @@ class TestSynaExtra(unittest.TestCase):
     def test_unary_ops_grad(self):
         # exp, log, sigmoid, tanh gradients
         N, D = 4, 5
-        x_np = np.random.randn(N, D).astype(np.float32) + 2.0  # shift to avoid log(<=0)
+        x_np = np.random.rand(N, D).astype(np.float32) + 2.0  # shift to avoid log(<=0)
 
         ops = [
             ("exp", lambda t: torch.exp(t)),
