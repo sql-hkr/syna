@@ -439,7 +439,7 @@ class Function:
     """
 
     def __call__(self, *input: Tensor | np.ndarray | int | float) -> Any:
-        inputs = [as_tensor(x) for x in input]
+        inputs = [as_tensor(x) if x is not None else Tensor(x) for x in input]
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
