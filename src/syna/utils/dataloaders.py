@@ -5,7 +5,7 @@ DataLoader and a sequence-aware SeqDataLoader.
 """
 
 import math
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable
 
 import numpy as np
 
@@ -26,7 +26,7 @@ class DataLoader:
     """
 
     def __init__(
-        self, dataset: Iterable[Tuple[Any, Any]], batch_size: int, shuffle: bool = True
+        self, dataset: Iterable[tuple[Any, Any]], batch_size: int, shuffle: bool = True
     ):
         self.dataset = list(dataset)
         self.batch_size = int(batch_size)
@@ -48,7 +48,7 @@ class DataLoader:
     def __iter__(self):
         return self
 
-    def __next__(self) -> Tuple[np.ndarray, np.ndarray]:
+    def __next__(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Return the next batch (x, t) as NumPy arrays.
         Raises StopIteration at the end of an epoch and resets internally.
@@ -90,17 +90,17 @@ class SeqDataLoader(DataLoader):
         - Iteration yields exactly data_size // jump steps (i.e., max_iter inherited).
     """
 
-    def __init__(self, dataset: Iterable[Tuple[Any, Any]], batch_size: int):
+    def __init__(self, dataset: Iterable[tuple[Any, Any]], batch_size: int):
         super().__init__(dataset=dataset, batch_size=batch_size, shuffle=False)
 
-    def __next__(self) -> Tuple[np.ndarray, np.ndarray]:
+    def __next__(self) -> tuple[np.ndarray, np.ndarray]:
         if self.iteration >= self.max_iter:
             self.reset()
             raise StopIteration
 
         # jump sets the offset between streams to evenly partition the data
         jump = max(1, self.data_size // max(1, self.batch_size))
-        indices: List[int] = [
+        indices: list[int] = [
             (i * jump + self.iteration) % self.data_size for i in range(self.batch_size)
         ]
         batch = [self.dataset[i] for i in indices]

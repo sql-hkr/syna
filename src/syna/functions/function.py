@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -13,7 +13,7 @@ from syna.core import Function, Tensor, as_tensor
 class Reshape(Function):
     """Reshape tensor to a given shape."""
 
-    def __init__(self, shape: Tuple[int, ...]) -> None:
+    def __init__(self, shape: tuple[int, ...]) -> None:
         self.shape = shape
 
     def forward(self, x):
@@ -118,7 +118,7 @@ class Sum(Function):
         return broadcast_to(gy, self.x_shape)
 
 
-def sum(x, axis: Optional[Tuple[int, ...]] = None, keepdims=False) -> Tensor:
+def sum(x, axis: Optional[tuple[int, ...]] = None, keepdims=False) -> Tensor:
     """Sum elements along given axes."""
     return Sum(axis, keepdims)(x)
 
@@ -126,7 +126,7 @@ def sum(x, axis: Optional[Tuple[int, ...]] = None, keepdims=False) -> Tensor:
 class SumTo(Function):
     """Sum elements to target shape (inverse of broadcast_to)."""
 
-    def __init__(self, shape: Tuple[int, ...]):
+    def __init__(self, shape: tuple[int, ...]):
         self.shape = shape
 
     def forward(self, x):
@@ -137,7 +137,7 @@ class SumTo(Function):
         return broadcast_to(gy, self.x_shape)
 
 
-def sum_to(x, shape: Tuple[int, ...]) -> Tensor:
+def sum_to(x, shape: tuple[int, ...]) -> Tensor:
     """Sum elements of x so result has `shape`."""
     if x.shape == shape:
         return as_tensor(x)
@@ -147,7 +147,7 @@ def sum_to(x, shape: Tuple[int, ...]) -> Tensor:
 class BroadcastTo(Function):
     """Broadcast x to shape."""
 
-    def __init__(self, shape: Tuple[int, ...]) -> None:
+    def __init__(self, shape: tuple[int, ...]) -> None:
         self.shape = shape
 
     def forward(self, x):
@@ -158,7 +158,7 @@ class BroadcastTo(Function):
         return sum_to(gy, self.x_shape)
 
 
-def broadcast_to(x, shape: Tuple[int, ...]) -> Tensor:
+def broadcast_to(x, shape: tuple[int, ...]) -> Tensor:
     """Broadcast x to the given shape."""
     if x.shape == shape:
         return as_tensor(x)

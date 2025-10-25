@@ -7,7 +7,7 @@ and a few tensor-related utilities.
 
 import os
 import urllib.request
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 
@@ -16,7 +16,7 @@ import syna
 # --- array/tensor helpers -----------------------------------------------------------
 
 
-def sum_to(x: np.ndarray, shape: Tuple[int, ...]) -> np.ndarray:
+def sum_to(x: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
     """
     Sum elements of array `x` so that the result has shape `shape`.
     This implements broadcasting-compatible sum reduction.
@@ -33,8 +33,8 @@ def sum_to(x: np.ndarray, shape: Tuple[int, ...]) -> np.ndarray:
 
 def reshape_sum_backward(
     gy: np.ndarray,
-    x_shape: Tuple[int, ...],
-    axis: Optional[Union[int, Tuple[int, ...]]],
+    x_shape: tuple[int, ...],
+    axis: Optional[Union[int, tuple[int, ...]]],
     keepdims: bool,
 ) -> np.ndarray:
     """
@@ -74,7 +74,7 @@ def logsumexp(x: np.ndarray, axis: int = 1) -> np.ndarray:
 
 
 def max_backward_shape(
-    x: np.ndarray, axis: Optional[Union[int, Tuple[int, ...]]]
+    x: np.ndarray, axis: Optional[Union[int, tuple[int, ...]]]
 ) -> list:
     """
     Compute the shape of gradient for max reduction so the result can be
@@ -216,7 +216,7 @@ def get_file(url: str, file_name: Optional[str] = None) -> str:
     return file_path
 
 
-def pair(x: Union[int, Tuple[int, int]]) -> Tuple[int, int]:
+def pair(x: Union[int, tuple[int, int]]) -> tuple[int, int]:
     """Ensure `x` is a pair (tuple of two ints)."""
     if isinstance(x, int):
         return (x, x)

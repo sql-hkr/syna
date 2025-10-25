@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -283,7 +283,7 @@ def linear_simple(x, W, b=None) -> Tensor:
     return y
 
 
-def mean(x, axis: Optional[Tuple[int, ...]] = None, keepdims=False) -> Tensor:
+def mean(x, axis: Optional[tuple[int, ...]] = None, keepdims=False) -> Tensor:
     """Mean like torch.mean: mean over all elements by default, or over given axis/axes."""
     x = as_tensor(x)
     if axis is None:
