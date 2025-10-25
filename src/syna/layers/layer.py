@@ -8,7 +8,7 @@ weights.
 
 import os
 import weakref
-from typing import Dict, Optional
+from typing import Optional
 
 import numpy as np
 
@@ -64,7 +64,7 @@ class Layer:
         for param in self.params():
             param.cleargrad()
 
-    def _flatten_params(self, params_dict: Dict[str, Parameter], parent_key: str = ""):
+    def _flatten_params(self, params_dict: dict[str, Parameter], parent_key: str = ""):
         """Populate params_dict with flattened parameter names -> Parameter."""
         for name in self._params:
             obj = self.__dict__[name]
@@ -76,7 +76,7 @@ class Layer:
 
     def save_weights(self, path: str):
         """Save layer parameters to a compressed .npz file."""
-        params_dict: Dict[str, Parameter] = {}
+        params_dict: dict[str, Parameter] = {}
         self._flatten_params(params_dict)
         array_dict = {k: p.data for k, p in params_dict.items() if p is not None}
         try:
@@ -90,7 +90,7 @@ class Layer:
     def load_weights(self, path: str):
         """Load parameters from a .npz file created by save_weights()."""
         npz = np.load(path)
-        params_dict: Dict[str, Parameter] = {}
+        params_dict: dict[str, Parameter] = {}
         self._flatten_params(params_dict)
         for key, param in params_dict.items():
             param.data = npz[key]

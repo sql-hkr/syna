@@ -6,7 +6,7 @@ that are used as hooks (weight decay, gradient clipping, parameter freezing).
 """
 
 import math
-from typing import Callable, Dict, Iterable, List
+from typing import Callable, Iterable
 
 import numpy as np
 
@@ -23,7 +23,7 @@ class Optimizer:
 
     def __init__(self) -> None:
         self.target = None
-        self.hooks: List[Callable[[Iterable], None]] = []
+        self.hooks: list[Callable[[Iterable], None]] = []
 
     def setup(self, target):
         """Attach optimizer to a target (model) which must provide params()."""
@@ -47,7 +47,7 @@ class Optimizer:
         self.hooks.append(f)
 
     # Utility for managing per-parameter state dicts (e.g., moments, accumulators).
-    def _state(self, store: Dict[int, np.ndarray], param: object) -> np.ndarray:
+    def _state(self, store: dict[int, np.ndarray], param: object) -> np.ndarray:
         key = id(param)
         if key not in store:
             store[key] = np.zeros_like(param.data)

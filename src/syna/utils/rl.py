@@ -11,7 +11,7 @@ Trainer expectations:
 
 import random
 from collections import deque
-from typing import Deque, Tuple
+from typing import Deque
 
 import gymnasium as gym
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ class ReplayBuffer:
     """
 
     def __init__(self, buffer_size: int, batch_size: int):
-        self.buffer: Deque[Tuple[np.ndarray, int, float, np.ndarray, bool]] = deque(
+        self.buffer: Deque[tuple[np.ndarray, int, float, np.ndarray, bool]] = deque(
             maxlen=buffer_size
         )
         self.batch_size = batch_size

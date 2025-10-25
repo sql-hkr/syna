@@ -1,5 +1,3 @@
-from typing import Dict
-
 import numpy as np
 
 from syna.optim.optimizer import Optimizer
@@ -12,7 +10,7 @@ class AdaGrad(Optimizer):
         super().__init__()
         self.lr = lr
         self.eps = eps
-        self._hs: Dict[int, np.ndarray] = {}
+        self._hs: dict[int, np.ndarray] = {}
 
     def update_one(self, param) -> None:
         h = self._state(self._hs, param)

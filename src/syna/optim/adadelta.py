@@ -1,5 +1,3 @@
-from typing import Dict
-
 import numpy as np
 
 from syna.optim.optimizer import Optimizer
@@ -12,8 +10,8 @@ class AdaDelta(Optimizer):
         super().__init__()
         self.rho = rho
         self.eps = eps
-        self._msg: Dict[int, np.ndarray] = {}
-        self._msdx: Dict[int, np.ndarray] = {}
+        self._msg: dict[int, np.ndarray] = {}
+        self._msdx: dict[int, np.ndarray] = {}
 
     def update_one(self, param) -> None:
         msg = self._state(self._msg, param)

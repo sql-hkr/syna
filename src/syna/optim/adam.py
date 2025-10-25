@@ -1,5 +1,4 @@
 import math
-from typing import Dict
 
 import numpy as np
 
@@ -26,8 +25,8 @@ class Adam(Optimizer):
         self.beta1 = beta1
         self.beta2 = beta2
         self.eps = eps
-        self._ms: Dict[int, np.ndarray] = {}
-        self._vs: Dict[int, np.ndarray] = {}
+        self._ms: dict[int, np.ndarray] = {}
+        self._vs: dict[int, np.ndarray] = {}
 
     def update(self, *args, **kwargs) -> None:
         """Increment time step and perform parameter updates."""
